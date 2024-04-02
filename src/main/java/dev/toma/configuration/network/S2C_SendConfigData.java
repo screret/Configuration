@@ -5,24 +5,23 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.adapter.TypeAdapter;
 import dev.toma.configuration.config.value.ConfigValue;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.event.network.CustomPayloadEvent;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Map;
 
-public class S2C_SendConfigData implements IPacket<S2C_SendConfigData> {
+public class S2C_SendConfigData implements CustomPacketPayload {
+    public static final ResourceLocation ID = new ResourceLocation(Configuration.MODID, "send_config_data");
 
     private final String config;
-
-    S2C_SendConfigData() {
-        this.config = null;
-    }
 
     public S2C_SendConfigData(String config) {
         this.config = config;
     }
 
     @Override
-    public void encode(FriendlyByteBuf buffer) {
+    public void write(FriendlyByteBuf buffer) {
         buffer.writeUtf(this.config);
         ConfigHolder.getConfig(this.config).ifPresent(data -> {
             Map<String, ConfigValue<?>> serialized = data.getNetworkSerializedFields();
@@ -37,9 +36,9 @@ public class S2C_SendConfigData implements IPacket<S2C_SendConfigData> {
         });
     }
 
-    @Override
-    public S2C_SendConfigData decode(FriendlyByteBuf buffer) {
+    public static S2C_SendConfigData decode(FriendlyByteBuf buffer) {
         String config = buffer.readUtf();
+        S2C_SendConfigData packet = new S2C_SendConfigData(config);
         int i = buffer.readInt();
         ConfigHolder.getConfig(config).ifPresent(data -> {
             Map<String, ConfigValue<?>> serialized = data.getNetworkSerializedFields();
@@ -50,15 +49,19 @@ public class S2C_SendConfigData implements IPacket<S2C_SendConfigData> {
                     Configuration.LOGGER.fatal(Networking.MARKER, "Received unknown config value " + fieldId);
                     throw new RuntimeException("Unknown config field: " + fieldId);
                 }
-                setValue(value, buffer);
+                packet.setValue(value, buffer);
             }
         });
-        return new S2C_SendConfigData(config);
+        return packet;
+    }
+
+    public static void handle(S2C_SendConfigData packet, IPayloadContext context) {
+
     }
 
     @Override
-    public void handle(CustomPayloadEvent.Context context) {
-        context.setPacketHandled(true);
+    public ResourceLocation id() {
+        return ID;
     }
 
     @SuppressWarnings("unchecked")

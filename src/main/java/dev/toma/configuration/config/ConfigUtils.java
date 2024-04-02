@@ -4,8 +4,8 @@ import dev.toma.configuration.Configuration;
 import dev.toma.configuration.config.exception.ConfigValueMissingException;
 import dev.toma.configuration.config.io.ConfigIO;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;

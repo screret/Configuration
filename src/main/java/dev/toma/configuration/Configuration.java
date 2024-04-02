@@ -10,20 +10,19 @@ import dev.toma.configuration.config.io.ConfigIO;
 import dev.toma.configuration.config.value.ConfigValue;
 import dev.toma.configuration.network.Networking;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.ConfigScreenHandler;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -41,11 +40,11 @@ public final class Configuration {
     public static final Logger LOGGER = LogManager.getLogger("Configuration");
     public static final Marker MAIN_MARKER = MarkerManager.getMarker("main");
 
-    public Configuration() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public Configuration(IEventBus modEventBus) {
         modEventBus.addListener(this::init);
+        modEventBus.addListener(Networking::registerPayloads);
         modEventBus.addListener(this::clientInit);
-        MinecraftForge.EVENT_BUS.addListener(this::cleanUp);
+        NeoForge.EVENT_BUS.addListener(this::cleanUp);
 
         if (isDevelopmentEnvironment()) {
             registerConfig(TestingConfig.class, ConfigFormats.yaml());
@@ -140,7 +139,6 @@ public final class Configuration {
     }
 
     private void init(FMLCommonSetupEvent event) {
-        Networking.PacketRegistry.register();
         ConfigIO.FILE_WATCH_MANAGER.startService();
     }
 
