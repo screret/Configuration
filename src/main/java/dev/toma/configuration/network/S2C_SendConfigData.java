@@ -5,6 +5,7 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.adapter.TypeAdapter;
 import dev.toma.configuration.config.value.ConfigValue;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -13,6 +14,8 @@ import java.util.Map;
 
 public class S2C_SendConfigData implements CustomPacketPayload {
     public static final ResourceLocation ID = new ResourceLocation(Configuration.MODID, "send_config_data");
+    public static final Type<S2C_SendConfigData> TYPE = new Type<>(ID);
+    public static final StreamCodec<FriendlyByteBuf, S2C_SendConfigData> CODEC = StreamCodec.ofMember(S2C_SendConfigData::write, S2C_SendConfigData::decode);
 
     private final String config;
 
@@ -20,7 +23,6 @@ public class S2C_SendConfigData implements CustomPacketPayload {
         this.config = config;
     }
 
-    @Override
     public void write(FriendlyByteBuf buffer) {
         buffer.writeUtf(this.config);
         ConfigHolder.getConfig(this.config).ifPresent(data -> {
@@ -59,15 +61,15 @@ public class S2C_SendConfigData implements CustomPacketPayload {
 
     }
 
-    @Override
-    public ResourceLocation id() {
-        return ID;
-    }
-
     @SuppressWarnings("unchecked")
     private <V> void setValue(ConfigValue<V> value, FriendlyByteBuf buffer) {
         TypeAdapter adapter = value.getAdapter();
         V v = (V) adapter.decodeFromBuffer(value, buffer);
         value.set(v);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

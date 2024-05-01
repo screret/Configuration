@@ -20,7 +20,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.ConfigScreenHandler;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Mod(Configuration.MODID)
 public final class Configuration {
@@ -156,12 +157,12 @@ public final class Configuration {
             Optional<? extends ModContainer> optional = modList.getModContainerById(modId);
             optional.ifPresent(modContainer -> {
                 List<ConfigHolder<?>> list = entry.getValue();
-                modContainer.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, screen) -> {
+                modContainer.registerExtensionPoint(IConfigScreenFactory.class, (Supplier<IConfigScreenFactory>) () -> (minecraft, screen) -> {
                     if (list.size() == 1) {
                         return getConfigScreen(list.get(0).getConfigId(), screen);
                     }
                     return getConfigScreenByGroup(list, modId, screen);
-                }));
+                });
             });
         }
     }
