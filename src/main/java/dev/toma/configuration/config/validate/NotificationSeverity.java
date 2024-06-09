@@ -17,7 +17,7 @@ public enum NotificationSeverity {
     public final int fadeMax;
 
     NotificationSeverity(String iconName, ChatFormatting formatting, int background, int fadeMin, int fadeMax) {
-        this.icon = new ResourceLocation(Configuration.MODID, "textures/icons/" + iconName + ".png");
+        this.icon = ResourceLocation.fromNamespaceAndPath(Configuration.MODID, "textures/icons/" + iconName + ".png");
         this.extraFormatting = formatting;
         this.background = background;
         this.fadeMin = fadeMin;

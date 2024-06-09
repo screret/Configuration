@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.Map;
 
 public class S2C_SendConfigData implements CustomPacketPayload {
-    public static final ResourceLocation ID = new ResourceLocation(Configuration.MODID, "send_config_data");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Configuration.MODID, "send_config_data");
     public static final Type<S2C_SendConfigData> TYPE = new Type<>(ID);
     public static final StreamCodec<FriendlyByteBuf, S2C_SendConfigData> CODEC = StreamCodec.ofMember(S2C_SendConfigData::write, S2C_SendConfigData::decode);
 

@@ -89,11 +89,11 @@ public interface TypeMatcher extends Predicate<Class<?>> {
         }
 
         public static NamedMatcherImpl vanilla(String path, Predicate<Class<?>> matcher) {
-            return new NamedMatcherImpl(new ResourceLocation(Configuration.MODID, path), matcher);
+            return new NamedMatcherImpl(ResourceLocation.fromNamespaceAndPath(Configuration.MODID, path), matcher);
         }
 
         public static NamedMatcherImpl vanilla(String path, Class<?> requiredType) {
-            return new NamedMatcherImpl(new ResourceLocation(Configuration.MODID, path), type -> type.equals(requiredType));
+            return new NamedMatcherImpl(ResourceLocation.fromNamespaceAndPath(Configuration.MODID, path), type -> type.equals(requiredType));
         }
 
         public NamedMatcherImpl withPriority(int priority) {

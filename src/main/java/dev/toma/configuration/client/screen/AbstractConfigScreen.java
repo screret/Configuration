@@ -17,6 +17,7 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -33,9 +34,9 @@ public abstract class AbstractConfigScreen extends Screen {
     public static final int HEADER_HEIGHT = 35;
     public static final int FOOTER_HEIGHT = 30;
     public static final WidgetSprites BUTTON_SPRITES = new WidgetSprites(
-            new ResourceLocation("widget/button"),
-            new ResourceLocation("widget/button_disabled"),
-            new ResourceLocation("widget/button_highlighted")
+            ResourceLocation.withDefaultNamespace("widget/button"),
+            ResourceLocation.withDefaultNamespace("widget/button_disabled"),
+            ResourceLocation.withDefaultNamespace("widget/button_highlighted")
     );
     public static final Marker MARKER = MarkerManager.getMarker("Screen");
     protected final Screen last;
@@ -181,8 +182,7 @@ public abstract class AbstractConfigScreen extends Screen {
             int zIndex = 400;
             Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            BufferBuilder bufferbuilder = tessellator.getBuilder();
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             Matrix4f matrix4f = stack.last().pose();
             graphics.fillGradient(startX - 3, startY - 4, startX + maxTextWidth + 3, startY - 3, zIndex, background, background);
             graphics.fillGradient(startX - 3, startY + heightOffset + 3, startX + maxTextWidth + 3, startY + heightOffset + 4, zIndex, background, background);
@@ -196,25 +196,25 @@ public abstract class AbstractConfigScreen extends Screen {
             RenderSystem.enableDepthTest();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            BufferUploader.drawWithShader(bufferbuilder.end());
+            BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
 
             if (!severity.isOkStatus()) {
                 ResourceLocation icon = severity.getIcon();
                 RenderSystem.setShader(GameRenderer::getPositionTexShader);
                 RenderSystem.setShaderTexture(0, icon);
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
                 float min = -0.5f;
                 float max = 8.5f;
-                bufferbuilder.vertex(matrix4f, startX + min, startY + min, zIndex).uv(0.0F, 0.0F).endVertex();
-                bufferbuilder.vertex(matrix4f, startX + min, startY + max, zIndex).uv(0.0F, 1.0F).endVertex();
-                bufferbuilder.vertex(matrix4f, startX + max, startY + max, zIndex).uv(1.0F, 1.0F).endVertex();
-                bufferbuilder.vertex(matrix4f, startX + max, startY + min, zIndex).uv(1.0F, 0.0F).endVertex();
-                BufferUploader.drawWithShader(bufferbuilder.end());
+                bufferbuilder.addVertex(matrix4f, startX + min, startY + min, zIndex).setUv(0.0F, 0.0F);
+                bufferbuilder.addVertex(matrix4f, startX + min, startY + max, zIndex).setUv(0.0F, 1.0F);
+                bufferbuilder.addVertex(matrix4f, startX + max, startY + max, zIndex).setUv(1.0F, 1.0F);
+                bufferbuilder.addVertex(matrix4f, startX + max, startY + min, zIndex).setUv(1.0F, 0.0F);
+                BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
             }
 
 
             RenderSystem.disableBlend();
-            MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+            MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(RenderType.TRANSIENT_BUFFER_SIZE));
             stack.translate(0.0D, 0.0D, zIndex);
 
             int textOffset = severity.isOkStatus() ? 0 : iconOffset;
